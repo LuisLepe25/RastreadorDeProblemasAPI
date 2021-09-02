@@ -165,7 +165,7 @@ namespace RastreadorDeProblemasAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerRequestExample(typeof(Problema), typeof(ProblemaRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status201Created, typeof(ProblemaResponseExample))]
-        public async Task<Object> PostProblema(Problema problema)
+        public async Task<Object> PostProblema([FromBody] Problema problema)
         {
             if (ModelState.IsValid)
             {
