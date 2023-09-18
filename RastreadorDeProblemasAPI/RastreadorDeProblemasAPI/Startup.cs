@@ -48,7 +48,7 @@ namespace RastreadorDeProblemasAPI
             });
 
             services.AddSwaggerExamplesFromAssemblyOf<ProblemaRequestExample>();
-
+            string var = Configuration.GetConnectionString("DefaultConnection");    
             // Ejecutareste comando en la terminal para actualizar los modelos, no olvidar borrar la clave que se genera en Context en OnConfiguring()
             // Scaffold-DbContext "Server=.\SQLEXPRESS;Database=IssueTracker;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models/dbModels -DataAnnotations -Context RastreadorProblemasContext -Force
             services.AddDbContext<RastreadorProblemasContext>(optionsBuilder => {
@@ -60,12 +60,14 @@ namespace RastreadorDeProblemasAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, RastreadorProblemasContext appdbcontext)
         {
-            if (env.IsDevelopment())
+            /*if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RastreadorDeProblemasAPI v1"));
+                
             }
+            */
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RastreadorDeProblemasAPI v1"));
 
             InitDB.UpdateDB(appdbcontext);
             InitDB.SeedDefaultData(appdbcontext);
