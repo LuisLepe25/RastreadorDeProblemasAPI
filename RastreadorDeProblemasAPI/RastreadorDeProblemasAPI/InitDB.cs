@@ -28,16 +28,16 @@ namespace RastreadorDeProblemasAPI
         public static void SeedDefaultData(RastreadorProblemasContext context)
         {
 
-            CreateProblemaEstatusIfNotExists(context, 1, "BAJO");
-            CreateProblemaEstatusIfNotExists(context, 2, "MEDIO");
-            CreateProblemaEstatusIfNotExists(context, 3, "ALTO");
-            CreateProblemaEstatusIfNotExists(context, 4, "URGENTE");
+            CreateProblemaEstatusIfNotExists(context, 1, "BAJO", "info");
+            CreateProblemaEstatusIfNotExists(context, 2, "MEDIO", "primary");
+            CreateProblemaEstatusIfNotExists(context, 3, "ALTO", "warning");
+            CreateProblemaEstatusIfNotExists(context, 4, "URGENTE", "danger");
 
             List<string> listaNombres = new List<string>() { "Eloisa Giner", "Belinda Alcaide", "Carlos Barrio", "Juan Miguel Cardenas", "Mireia Boix", "Jose Tomas Moran", "Florencia Santamaria", "Juan Luis Miralles", "Aitor Alcaraz", "Maria Azucena Huerta", "Jose Domingo Sarmiento", "Anas Garriga" };
             CreateUsuariosIfTableEmpty(context, listaNombres);
         }
 
-        private static ProblemaEstatus CreateProblemaEstatusIfNotExists(RastreadorProblemasContext context, int Id, string descripcion)
+        private static ProblemaEstatus CreateProblemaEstatusIfNotExists(RastreadorProblemasContext context, int Id, string descripcion, string colorSeveridad)
         {
             var obj = context.ProblemaEstatuses.Where(x => x.IdProblemaEstatus == Id);
             if (!obj.Any())
@@ -45,7 +45,8 @@ namespace RastreadorDeProblemasAPI
                 ProblemaEstatus o = new ProblemaEstatus()
                 {
                     IdProblemaEstatus = Id,
-                    Descripcion = descripcion
+                    Descripcion = descripcion,
+                    SeveridadColor = colorSeveridad
                 };
                 context.ProblemaEstatuses.Add(o);
                 context.SaveChanges();

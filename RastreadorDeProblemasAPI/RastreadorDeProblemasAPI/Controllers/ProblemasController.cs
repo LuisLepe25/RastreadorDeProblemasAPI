@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RastreadorDeProblemasAPI.Models.CustomErrors;
 using RastreadorDeProblemasAPI.Models.dbModels;
+using RastreadorDeProblemasAPI.Models.DTO;
 using RastreadorDeProblemasAPI.Models.SwaggerExamples;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -38,18 +39,38 @@ namespace RastreadorDeProblemasAPI.Controllers
         // GET: api/Problemas/all/2092458
         [HttpGet("all/{matricula}")]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Problema>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ProblemaDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerResponseExample(200, typeof(ProblemasExamples))]
-        public async Task<ActionResult<IEnumerable<Problema>>> GetProblemas(long matricula)
+        public async Task<ActionResult<IEnumerable<ProblemaDTO>>> GetProblemas(long matricula)
         {
             try
             {
-                var problemas = _context.Problemas.Where(x => x.IdentificadorAlumno == matricula).ToListAsync();
-
-                return await problemas;
-            } catch(Exception ex)
+                List<Problema> problemas = await _context.Problemas
+                    .Where(x => x.IdentificadorAlumno == matricula)
+                    .Include(x => x.IdProblemaEstatusNavigation)
+                    .Include(x => x.IdUsuarioAsignadoNavigation)
+                    .ToListAsync();
+                List<ProblemaDTO> problemaDTOs = new List<ProblemaDTO>();
+                foreach (var problema in problemas)
+                {
+                    ProblemaDTO problemaDTO = new ProblemaDTO
+                    {
+                        IdProblema = problema.IdProblema,
+                        Descripcion = problema.Descripcion,
+                        IdProblemaEstatus = problema.IdProblemaEstatus,
+                        ProblemaEstatusNombre = problema.IdProblemaEstatusNavigation.Descripcion,
+                        ColorEstatusProblema = problema.IdProblemaEstatusNavigation.SeveridadColor,
+                        IdUsuarioAsignado = problema.IdUsuarioAsignado,
+                        UsuarioNombre = problema.IdUsuarioAsignadoNavigation.Nombre,
+                        IdentificadorAlumno = problema.IdentificadorAlumno
+                    };
+                    problemaDTOs.Add(problemaDTO);
+                }
+                return problemaDTOs;
+            }
+            catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message ?? "Error desconocido.");
             }
@@ -68,23 +89,39 @@ namespace RastreadorDeProblemasAPI.Controllers
         // GET: api/Problemas/2092458
         [HttpGet("{id}")]
         [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Problema))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProblemaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(ProblemaResponseExample))]
-        public async Task<ActionResult<Problema>> GetProblemaAsync(int id)
+        public async Task<ActionResult<ProblemaDTO>> GetProblemaAsync(int id)
         {
             try
             {
-                var problema = await _context.Problemas.FindAsync(id);
+                var problema = await _context.Problemas
+                    .Include(x => x.IdProblemaEstatusNavigation)
+                    .Include(x => x.IdUsuarioAsignadoNavigation)
+                    .Where(x => x.IdProblema == id)
+                    .FirstOrDefaultAsync();
 
                 if (problema == null)
                 {
                     return NotFound();
                 }
 
-                return problema;
+                ProblemaDTO problemaDTO = new ProblemaDTO
+                {
+                    IdProblema = problema.IdProblema,
+                    Descripcion = problema.Descripcion,
+                    IdProblemaEstatus = problema.IdProblemaEstatus,
+                    ProblemaEstatusNombre = problema.IdProblemaEstatusNavigation.Descripcion,
+                    ColorEstatusProblema = problema.IdProblemaEstatusNavigation.SeveridadColor,
+                    IdUsuarioAsignado = problema.IdUsuarioAsignado,
+                    UsuarioNombre = problema.IdUsuarioAsignadoNavigation.Nombre,
+                    IdentificadorAlumno = problema.IdentificadorAlumno
+                };
+
+                return problemaDTO;
             }
             catch (Exception ex)
             {
@@ -176,17 +213,33 @@ namespace RastreadorDeProblemasAPI.Controllers
                     int IdUsuarioAsignado = problema.IdUsuarioAsignado == 0 ? throw new ArgumentNullException(nameof(IdUsuarioAsignado)) : problema.IdUsuarioAsignado;
                     long IdentificadorAlumno = problema.IdentificadorAlumno == 0 ? throw new ArgumentNullException(nameof(IdentificadorAlumno)) : problema.IdentificadorAlumno;
 
-                    _context.Problemas.Add(problema);
+
                     try
                     {
+                        _context.Problemas.Add(problema);
                         await _context.SaveChangesAsync();
+                        Problema problemaActualizado = await _context.Problemas
+                            .Include(x => x.IdProblemaEstatusNavigation)
+                            .Include(x => x.IdUsuarioAsignadoNavigation)
+                            .Where(x => x.IdProblema == problema.IdProblema)
+                            .FirstOrDefaultAsync();
+                        ProblemaDTO problemaDTO = new ProblemaDTO
+                        {
+                            IdProblema = problemaActualizado.IdProblema,
+                            Descripcion = problemaActualizado.Descripcion,
+                            IdProblemaEstatus = problemaActualizado.IdProblemaEstatus,
+                            ProblemaEstatusNombre = problemaActualizado.IdProblemaEstatusNavigation.Descripcion,
+                            ColorEstatusProblema = problemaActualizado.IdProblemaEstatusNavigation.SeveridadColor,
+                            IdUsuarioAsignado = problemaActualizado.IdUsuarioAsignado,
+                            UsuarioNombre = problemaActualizado.IdUsuarioAsignadoNavigation.Nombre,
+                            IdentificadorAlumno = problemaActualizado.IdentificadorAlumno
+                        };
+                        return CreatedAtAction("GetProblema", new { id = problema.IdProblema }, problemaDTO);
                     }
                     catch (DbUpdateException ex)
                     {
                         return Conflict();
                     }
-
-                    return CreatedAtAction("GetProblema", new { id = problema.IdProblema }, problema);
                 }
                 catch (ArgumentNullException e)
                 {
@@ -197,12 +250,13 @@ namespace RastreadorDeProblemasAPI.Controllers
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError, ex.Message ?? "Error desconocido.");
                 }
-            } else
+            }
+            else
             {
                 return BadRequest();
             }
-            
-            
+
+
         }
 
         /// <summary>
@@ -224,7 +278,7 @@ namespace RastreadorDeProblemasAPI.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteProblema(int id)
         {
-            if(id > 0)
+            if (id > 0)
             {
                 try
                 {

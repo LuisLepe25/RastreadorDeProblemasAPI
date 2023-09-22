@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
+#nullable disable
+
 namespace RastreadorDeProblemasAPI.Migrations
 {
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,7 +13,8 @@ namespace RastreadorDeProblemasAPI.Migrations
                 columns: table => new
                 {
                     IdProblemaEstatus = table.Column<int>(type: "int", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Descripcion = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SeveridadColor = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -48,14 +51,12 @@ namespace RastreadorDeProblemasAPI.Migrations
                         name: "FK_Problema_ProblemaEstatus",
                         column: x => x.IdProblemaEstatus,
                         principalTable: "ProblemaEstatus",
-                        principalColumn: "IdProblemaEstatus",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "IdProblemaEstatus");
                     table.ForeignKey(
                         name: "FK_Problema_Usuario",
                         column: x => x.IdUsuarioAsignado,
                         principalTable: "Usuario",
-                        principalColumn: "IdUsuario",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "IdUsuario");
                 });
 
             migrationBuilder.CreateIndex(

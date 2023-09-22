@@ -60,12 +60,14 @@ namespace RastreadorDeProblemasAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, RastreadorProblemasContext appdbcontext)
         {
-            /*if (env.IsDevelopment())
+            if (env.IsDevelopment())
             {
-                
+                app.UseDeveloperExceptionPage();
             }
-            */
-            app.UseDeveloperExceptionPage();
+            else
+            {
+                app.UseHsts();
+            }
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RastreadorDeProblemasAPI v1"));
 

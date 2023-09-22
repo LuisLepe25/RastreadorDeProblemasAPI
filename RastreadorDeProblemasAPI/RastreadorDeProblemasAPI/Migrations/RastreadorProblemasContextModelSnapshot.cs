@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RastreadorDeProblemasAPI.Models.dbModels;
 
+#nullable disable
+
 namespace RastreadorDeProblemasAPI.Migrations
 {
     [DbContext(typeof(RastreadorProblemasContext))]
@@ -14,18 +16,20 @@ namespace RastreadorDeProblemasAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Relational:Collation", "Modern_Spanish_CI_AS")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.9")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .UseCollation("Modern_Spanish_CI_AS")
+                .HasAnnotation("ProductVersion", "6.0.21")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("RastreadorDeProblemasAPI.Models.dbModels.Problema", b =>
                 {
                     b.Property<int>("IdProblema")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("idProblema")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnName("idProblema");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdProblema"), 1L, 1);
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -60,6 +64,11 @@ namespace RastreadorDeProblemasAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("SeveridadColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.HasKey("IdProblemaEstatus");
 
                     b.ToTable("ProblemaEstatus");
@@ -85,14 +94,14 @@ namespace RastreadorDeProblemasAPI.Migrations
                     b.HasOne("RastreadorDeProblemasAPI.Models.dbModels.ProblemaEstatus", "IdProblemaEstatusNavigation")
                         .WithMany("Problemas")
                         .HasForeignKey("IdProblemaEstatus")
-                        .HasConstraintName("FK_Problema_ProblemaEstatus")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_Problema_ProblemaEstatus");
 
                     b.HasOne("RastreadorDeProblemasAPI.Models.dbModels.Usuario", "IdUsuarioAsignadoNavigation")
                         .WithMany("Problemas")
                         .HasForeignKey("IdUsuarioAsignado")
-                        .HasConstraintName("FK_Problema_Usuario")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_Problema_Usuario");
 
                     b.Navigation("IdProblemaEstatusNavigation");
 

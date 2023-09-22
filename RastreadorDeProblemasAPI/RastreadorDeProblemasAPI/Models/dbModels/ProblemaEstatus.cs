@@ -22,6 +22,9 @@ namespace RastreadorDeProblemasAPI.Models.dbModels
         [Required]
         [StringLength(50)]
         public string Descripcion { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string SeveridadColor { get; set; }
 
         [JsonIgnore]
         [InverseProperty(nameof(Problema.IdProblemaEstatusNavigation))]
